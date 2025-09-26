@@ -101,7 +101,7 @@ export default function CriarSaas() {
 
     setGerandoPrompt(true)
     
-    // Simular geração de prompt
+    // Simulação de processamento
     await new Promise(resolve => setTimeout(resolve, 2000))
     
     const prompt = `🚀 STRATEGIC BUILDIFY MENTOR AI PROMPT V2.0
@@ -188,6 +188,26 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
     toast({
       title: "Download iniciado!",
       description: "Arquivo de prompt baixado com sucesso.",
+    })
+  }
+
+  const salvarProjeto = () => {
+    if (!promptGerado) return
+
+    const novoProjeto = {
+      id: Date.now(),
+      ...formData,
+      prompt: promptGerado,
+      criadoEm: new Date().toISOString(),
+    }
+
+    const projetosSalvos = JSON.parse(localStorage.getItem("projetos") || "[]")
+    projetosSalvos.push(novoProjeto)
+    localStorage.setItem("projetos", JSON.stringify(projetosSalvos))
+
+    toast({
+      title: "Projeto salvo!",
+      description: `O projeto "${formData.nomeSaas}" foi salvo em Meus Projetos.`,
     })
   }
 
@@ -419,6 +439,9 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
                       <Button variant="outline" size="sm" onClick={baixarPrompt} className="flex-1">
                         <Download className="w-4 h-4 mr-2" />
                         Baixar
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={salvarProjeto} className="flex-1">
+                        💾 Salvar
                       </Button>
                     </div>
                   </div>
