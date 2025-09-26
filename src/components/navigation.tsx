@@ -1,19 +1,25 @@
 import { useState } from "react"
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { 
   Home, 
   Sparkles, 
   FolderOpen, 
   Settings, 
   Menu,
-  X
+  X,
+  LogIn,
+  LogOut
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useAuth } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: Home },
+const publicNavigation = [
+  { name: 'Início', href: '/', icon: Home },
+]
+
+const privateNavigation = [
   { name: 'Criar SaaS', href: '/criar-saas', icon: Sparkles },
   { name: 'Meus Projetos', href: '/projetos', icon: FolderOpen },
   { name: 'Configurações', href: '/configuracoes', icon: Settings },
@@ -21,6 +27,19 @@ const navigation = [
 
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+  
+  const navigation = user ? privateNavigation : publicNavigation
+
+  const handleAuthAction = async () => {
+    if (user) {
+      await signOut()
+      navigate('/')
+    } else {
+      navigate('/auth')
+    }
+  }
 
   return (
     <nav className="sticky top-0 z-50 glass border-b border-border/50">
@@ -55,8 +74,22 @@ export function Navigation() {
           
           <div className="hidden md:flex md:items-center md:space-x-4">
             <ThemeToggle />
-            <Button variant="default" className="btn-hero">
-              Começar Agora
+            <Button 
+              variant="default" 
+              className="btn-hero"
+              onClick={handleAuthAction}
+            >
+              {user ? (
+                <>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sair
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Entrar
+                </>
+              )}
             </Button>
           </div>
 
@@ -101,8 +134,22 @@ export function Navigation() {
               </NavLink>
             ))}
             <div className="pt-4 pb-3 border-t border-border/50">
-              <Button variant="default" className="btn-hero w-full">
-                Começar Agora
+              <Button 
+                variant="default" 
+                className="btn-hero w-full"
+                onClick={handleAuthAction}
+              >
+                {user ? (
+                  <>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Entrar
+                  </>
+                )}
               </Button>
             </div>
           </div>

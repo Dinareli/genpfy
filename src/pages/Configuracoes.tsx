@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,8 +7,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useAuth } from "@/hooks/useAuth"
+import { supabase } from "@/integrations/supabase/client"
 import { 
   Settings, 
   User, 
@@ -16,16 +19,17 @@ import {
   Shield, 
   Palette,
   Save,
-  Upload
+  Upload,
+  LogOut,
+  Crown,
+  CreditCard
 } from "lucide-react"
 
 export default function Configuracoes() {
+  const { user, signOut } = useAuth()
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
   const [configuracoes, setConfiguracoes] = useState({
-    // Perfil
-    nome: "João Silva",
-    email: "joao@exemplo.com",
-    bio: "Desenvolvedor apaixonado por criar SaaS inovadores",
-    
     // Notificações
     emailNotificacoes: true,
     promptsCriados: true,
@@ -43,6 +47,24 @@ export default function Configuracoes() {
     analiseUso: true
   })
 
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile()
+    }
+  }, [user])
+
+  const fetchUserProfile = async () => {
+    if (!user?.id) return
+    
+    // Por enquanto, definir perfil padrão baseado no usuário
+    // Pode ser melhorado quando as tabelas estiverem configuradas corretamente
+    setUserProfile({ 
+      id: user.id, 
+      plan: 'free', 
+      created_at: user.created_at || new Date().toISOString() 
+    })
+  }
+
   const handleConfigChange = (campo: string, valor: any) => {
     setConfiguracoes(prev => ({ ...prev, [campo]: valor }))
   }
@@ -53,6 +75,44 @@ export default function Configuracoes() {
       title: "Configurações salvas!",
       description: "Suas preferências foram atualizadas com sucesso.",
     })
+  }
+
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      toast({
+        title: "Logout realizado!",
+        description: "Você foi desconectado com sucesso.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Ocorreu um erro ao fazer logout.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const getPlanBadgeVariant = (plan: string) => {
+    switch (plan) {
+      case 'premium':
+        return 'default'
+      case 'pro':
+        return 'secondary'
+      default:
+        return 'outline'
+    }
+  }
+
+  const getPlanName = (plan: string) => {
+    switch (plan) {
+      case 'premium':
+        return 'Premium'
+      case 'pro':
+        return 'Pro'
+      default:
+        return 'Free'
+    }
   }
 
   return (
@@ -76,66 +136,85 @@ export default function Configuracoes() {
         </div>
 
         <div className="space-y-6">
-          {/* Perfil */}
+          {/* Conta do Usuário */}
           <Card className="card-glass animate-slide-up">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <User className="w-5 h-5 text-primary" />
-                <span>Perfil</span>
+                <span>Conta do Usuário</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center space-x-6">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
-                    JS
-                  </AvatarFallback>
-                </Avatar>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={user?.user_metadata?.avatar_url} />
+                    <AvatarFallback className="text-lg bg-gradient-primary text-primary-foreground">
+                      {user?.email?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3">
+                      <h3 className="text-lg font-semibold">
+                        {user?.user_metadata?.full_name || user?.email}
+                      </h3>
+                      <Badge variant={getPlanBadgeVariant(userProfile?.plan || 'free')}>
+                        {userProfile?.plan === 'premium' && <Crown className="w-3 h-3 mr-1" />}
+                        {getPlanName(userProfile?.plan || 'free')}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Provedor: {user?.app_metadata?.provider || 'email'}
+                    </p>
+                  </div>
+                </div>
                 
-                <div className="flex-1 space-y-2">
-                  <Button variant="outline" size="sm" className="btn-glass">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Alterar Foto
+                <div className="space-y-2">
+                  <Button variant="outline" size="sm" className="btn-glass w-full">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Upgrade de Plano
                   </Button>
-                  <p className="text-sm text-muted-foreground">
-                    Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB.
-                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="btn-glass w-full"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair da Conta
+                  </Button>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="nome">Nome Completo</Label>
-                  <Input
-                    id="nome"
-                    value={configuracoes.nome}
-                    onChange={(e) => handleConfigChange("nome", e.target.value)}
-                    className="input-focus"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={configuracoes.email}
-                    onChange={(e) => handleConfigChange("email", e.target.value)}
-                    className="input-focus"
-                  />
-                </div>
-              </div>
+              <Separator />
               
-              <div>
-                <Label htmlFor="bio">Biografia</Label>
-                <Textarea
-                  id="bio"
-                  placeholder="Conte um pouco sobre você..."
-                  value={configuracoes.bio}
-                  onChange={(e) => handleConfigChange("bio", e.target.value)}
-                  className="input-focus"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div className="p-4 bg-accent/50 rounded-lg">
+                  <div className="text-2xl font-bold text-primary">
+                    {userProfile?.plan === 'free' ? '3' : '∞'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Prompts por mês
+                  </div>
+                </div>
+                <div className="p-4 bg-accent/50 rounded-lg">
+                  <div className="text-2xl font-bold text-secondary">
+                    {new Date(user?.created_at || '').toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Membro desde
+                  </div>
+                </div>
+                <div className="p-4 bg-accent/50 rounded-lg">
+                  <div className="text-2xl font-bold text-success">
+                    Ativo
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Status da conta
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
