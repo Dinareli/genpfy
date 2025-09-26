@@ -27,13 +27,26 @@ const privateNavigation = [
 
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  
+  // Usar try/catch para capturar erro do contexto
+  let user = null
+  let signOut = null
+  let loading = true
+  
+  try {
+    const auth = useAuth()
+    user = auth.user
+    signOut = auth.signOut
+    loading = auth.loading
+  } catch (error) {
+    console.warn('Navigation: useAuth hook not available, using default values')
+  }
   
   const navigation = user ? privateNavigation : publicNavigation
 
   const handleAuthAction = async () => {
-    if (user) {
+    if (user && signOut) {
       await signOut()
       navigate('/')
     } else {
