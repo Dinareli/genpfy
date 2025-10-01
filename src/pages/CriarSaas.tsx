@@ -1,23 +1,29 @@
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "@/hooks/use-toast"
-import { 
-  Sparkles, 
-  Target, 
-  Palette, 
-  Zap, 
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
+import {
+  Sparkles,
+  Target,
+  Palette,
+  Zap,
   Copy,
   Download,
-  RefreshCw
-} from "lucide-react"
+  RefreshCw,
+} from "lucide-react";
 
 const tiposSaas = [
   "E-commerce",
@@ -29,26 +35,36 @@ const tiposSaas = [
   "Financeiro",
   "RH",
   "Imobiliário",
-  "Outro"
-]
+  "Outro",
+];
 
 const estilosVisuais = [
   "Minimalista",
   "Corporativo",
   "Moderno",
-  "Criativo", 
+  "Criativo",
   "Elegante",
-  "Tech"
-]
+  "Tech",
+];
 
 const coresPrimarias = [
-  "#000000", "#1f2937", "#3b82f6", "#ef4444", 
-  "#10b981", "#f59e0b", "#8b5cf6", "#ec4899"
-]
+  "#000000",
+  "#1f2937",
+  "#3b82f6",
+  "#ef4444",
+  "#10b981",
+  "#f59e0b",
+  "#8b5cf6",
+  "#ec4899",
+];
+
+function isValidHexColor(color: string) {
+  return /^#[0-9A-Fa-f]{6}$/.test(color);
+}
 
 const recursos = [
   "Autenticação de usuários",
-  "Dashboard administrativo", 
+  "Dashboard administrativo",
   "Sistema de pagamentos",
   "Notificações em tempo real",
   "API REST",
@@ -56,8 +72,8 @@ const recursos = [
   "Chat/Suporte",
   "Integração com terceiros",
   "Modo escuro/claro",
-  "PWA (Progressive Web App)"
-]
+  "PWA (Progressive Web App)",
+];
 
 export default function CriarSaas() {
   const [formData, setFormData] = useState({
@@ -70,40 +86,49 @@ export default function CriarSaas() {
     estiloVisual: "",
     corPrimaria: "#000000",
     corSecundaria: "#3b82f6",
-    fonte: "Poppins"
-  })
+    fonte: "Poppins",
+  });
+  const [corPrimariaCustom, setCorPrimariaCustom] = useState("");
+  const [corSecundariaCustom, setCorSecundariaCustom] = useState("");
 
-  const [promptGerado, setPromptGerado] = useState("")
-  const [gerandoPrompt, setGerandoPrompt] = useState(false)
+  const [promptGerado, setPromptGerado] = useState("");
+  const [gerandoPrompt, setGerandoPrompt] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleRecursoToggle = (recurso: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       recursosEscolhidos: prev.recursosEscolhidos.includes(recurso)
-        ? prev.recursosEscolhidos.filter(r => r !== recurso)
-        : [...prev.recursosEscolhidos, recurso]
-    }))
-  }
+        ? prev.recursosEscolhidos.filter((r) => r !== recurso)
+        : [...prev.recursosEscolhidos, recurso],
+    }));
+  };
 
   const gerarPrompt = async () => {
     if (!formData.nomeSaas || !formData.problema || !formData.publicoAlvo) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha nome, problema e público-alvo para continuar.",
-        variant: "destructive"
-      })
-      return
+        variant: "destructive",
+      });
+      return;
     }
 
-    setGerandoPrompt(true)
-    
+    setGerandoPrompt(true);
     // Simulação de processamento
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Prioridade: campo custom > botão
+    const corPrimariaFinal = isValidHexColor(corPrimariaCustom)
+      ? corPrimariaCustom
+      : formData.corPrimaria;
+    const corSecundariaFinal = isValidHexColor(corSecundariaCustom)
+      ? corSecundariaCustom
+      : formData.corSecundaria;
+
     const prompt = `🚀 STRATEGIC BUILDIFY MENTOR AI PROMPT V2.0
 
 Você é um especialista em criar SaaS funcionais usando React, TypeScript e Tailwind CSS na plataforma Lovable.
@@ -115,17 +140,22 @@ Público-Alvo: ${formData.publicoAlvo}
 Tipo: ${formData.tipo || "Não especificado"}
 
 ⚙️ RECURSOS PRINCIPAIS:
-${formData.recursosEscolhidos.length > 0 
-  ? formData.recursosEscolhidos.map(r => `• ${r}`).join('\n')
-  : '• Dashboard principal\n• Sistema de usuários\n• Interface responsiva'}
+${
+  formData.recursosEscolhidos.length > 0
+    ? formData.recursosEscolhidos.map((r) => `• ${r}`).join("\n")
+    : "• Dashboard principal\n• Sistema de usuários\n• Interface responsiva"
+}
 
 📝 DESCRIÇÃO DETALHADA:
-${formData.descricao || "Criar uma aplicação SaaS moderna e funcional que resolva o problema especificado."}
+${
+  formData.descricao ||
+  "Criar uma aplicação SaaS moderna e funcional que resolva o problema especificado."
+}
 
 🎨 DESIGN PERSONALIZADO:
 • Estilo Visual: ${formData.estiloVisual || "Moderno"}
-• Cor Primária: ${formData.corPrimaria}
-• Cor Secundária: ${formData.corSecundaria}
+• Cor Primária: ${corPrimariaFinal}
+• Cor Secundária: ${corSecundariaFinal}
 • Fonte: ${formData.fonte}
 
 📱 ESPECIFICAÇÕES TÉCNICAS:
@@ -148,68 +178,71 @@ ${formData.descricao || "Criar uma aplicação SaaS moderna e funcional que reso
 2. Usar componentes shadcn/ui quando possível
 3. Manter código limpo, comentado e estruturado
 4. Focar na experiência do usuário (UX)
-5. Aplicar estilo visual "${formData.estiloVisual || "Moderno"}" consistentemente
+5. Aplicar estilo visual "${
+      formData.estiloVisual || "Moderno"
+    }" consistentemente
 6. Usar cores personalizadas harmoniosamente
 7. Testar responsividade em diferentes tamanhos
 8. Adicionar micro-animações para melhorar interação
 
 💡 DICA FINAL: Este prompt foi gerado pelo GenpFy considerando personalização visual completa, análise de público-alvo e melhores práticas de UX/UI para maximizar conversão e engajamento do seu SaaS.
 
-Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas especificações detalhadas.`
+Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas especificações detalhadas.`;
 
-    setPromptGerado(prompt)
-    setGerandoPrompt(false)
-    
+    setPromptGerado(prompt);
+    setGerandoPrompt(false);
     toast({
       title: "Prompt gerado com sucesso!",
       description: "Seu prompt personalizado está pronto para uso.",
-    })
-  }
+    });
+  };
 
   const copiarPrompt = () => {
-    navigator.clipboard.writeText(promptGerado)
+    navigator.clipboard.writeText(promptGerado);
     toast({
       title: "Copiado!",
       description: "Prompt copiado para a área de transferência.",
-    })
-  }
+    });
+  };
 
   const baixarPrompt = () => {
-    const blob = new Blob([promptGerado], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `prompt-${formData.nomeSaas.toLowerCase().replace(/\s+/g, '-')}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
+    const blob = new Blob([promptGerado], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `prompt-${formData.nomeSaas
+      .toLowerCase()
+      .replace(/\s+/g, "-")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
     toast({
       title: "Download iniciado!",
       description: "Arquivo de prompt baixado com sucesso.",
-    })
-  }
+    });
+  };
 
   const salvarProjeto = () => {
-    if (!promptGerado) return
+    if (!promptGerado) return;
 
     const novoProjeto = {
       id: Date.now(),
       ...formData,
       prompt: promptGerado,
       criadoEm: new Date().toISOString(),
-    }
+    };
 
-    const projetosSalvos = JSON.parse(localStorage.getItem("projetos") || "[]")
-    projetosSalvos.push(novoProjeto)
-    localStorage.setItem("projetos", JSON.stringify(projetosSalvos))
+    const projetosSalvos = JSON.parse(localStorage.getItem("projetos") || "[]");
+    projetosSalvos.push(novoProjeto);
+    localStorage.setItem("projetos", JSON.stringify(projetosSalvos));
 
     toast({
       title: "Projeto salvo!",
       description: `O projeto "${formData.nomeSaas}" foi salvo em Meus Projetos.`,
-    })
-  }
+    });
+  };
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -221,14 +254,18 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
               <span className="text-sm font-medium">Criador Inteligente</span>
             </div>
           </div>
-          
+
           <h1 className="text-3xl md:text-5xl font-bold mb-6">
             Crie seu
-            <span className="gradient-hero bg-clip-text text-transparent"> SaaS Perfeito</span>
+            <span className="gradient-hero bg-clip-text text-transparent">
+              {" "}
+              SaaS Perfeito
+            </span>
           </h1>
-          
+
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Responda algumas perguntas e receba um prompt completo e otimizado para criar seu SaaS no Lovable.dev.
+            Responda algumas perguntas e receba um prompt completo e otimizado
+            para criar seu SaaS no Lovable.dev.
           </p>
         </div>
 
@@ -250,54 +287,68 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
                     id="nome"
                     placeholder="Ex: TaskMaster Pro"
                     value={formData.nomeSaas}
-                    onChange={(e) => handleInputChange("nomeSaas", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("nomeSaas", e.target.value)
+                    }
                     className="input-focus"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="problema">Problema que resolve *</Label>
                   <Textarea
                     id="problema"
                     placeholder="Descreva o problema principal que seu SaaS irá resolver..."
                     value={formData.problema}
-                    onChange={(e) => handleInputChange("problema", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("problema", e.target.value)
+                    }
                     className="input-focus min-h-[100px]"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="publico">Público-alvo *</Label>
                   <Input
                     id="publico"
                     placeholder="Ex: freelancers, pequenas empresas, desenvolvedores"
                     value={formData.publicoAlvo}
-                    onChange={(e) => handleInputChange("publicoAlvo", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("publicoAlvo", e.target.value)
+                    }
                     className="input-focus"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="tipo">Tipo de SaaS</Label>
-                  <Select onValueChange={(value) => handleInputChange("tipo", value)}>
+                  <Select
+                    onValueChange={(value) => handleInputChange("tipo", value)}
+                  >
                     <SelectTrigger className="input-focus">
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {tiposSaas.map(tipo => (
-                        <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                      {tiposSaas.map((tipo) => (
+                        <SelectItem key={tipo} value={tipo}>
+                          {tipo}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
-                  <Label htmlFor="descricao">Descrição detalhada (opcional)</Label>
+                  <Label htmlFor="descricao">
+                    Descrição detalhada (opcional)
+                  </Label>
                   <Textarea
                     id="descricao"
                     placeholder="Descreva funcionalidades específicas, fluxos de usuário, ou requisitos especiais..."
                     value={formData.descricao}
-                    onChange={(e) => handleInputChange("descricao", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("descricao", e.target.value)
+                    }
                     className="input-focus min-h-[120px]"
                   />
                 </div>
@@ -305,7 +356,10 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
             </Card>
 
             {/* Recursos e Funcionalidades */}
-            <Card className="card-glass animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <Card
+              className="card-glass animate-slide-up"
+              style={{ animationDelay: "0.1s" }}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Zap className="w-5 h-5 text-secondary" />
@@ -314,26 +368,35 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {recursos.map(recurso => (
+                  {recursos.map((recurso) => (
                     <div key={recurso} className="flex items-center space-x-2">
                       <Checkbox
                         id={recurso}
                         checked={formData.recursosEscolhidos.includes(recurso)}
                         onCheckedChange={() => handleRecursoToggle(recurso)}
                       />
-                      <Label htmlFor={recurso} className="text-sm cursor-pointer">
+                      <Label
+                        htmlFor={recurso}
+                        className="text-sm cursor-pointer"
+                      >
                         {recurso}
                       </Label>
                     </div>
                   ))}
                 </div>
-                
+
                 {formData.recursosEscolhidos.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-border/50">
-                    <Label className="text-sm font-medium">Recursos selecionados:</Label>
+                    <Label className="text-sm font-medium">
+                      Recursos selecionados:
+                    </Label>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {formData.recursosEscolhidos.map(recurso => (
-                        <Badge key={recurso} variant="secondary" className="text-xs">
+                      {formData.recursosEscolhidos.map((recurso) => (
+                        <Badge
+                          key={recurso}
+                          variant="secondary"
+                          className="text-xs"
+                        >
                           {recurso}
                         </Badge>
                       ))}
@@ -344,7 +407,10 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
             </Card>
 
             {/* Design e Estilo */}
-            <Card className="card-glass animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <Card
+              className="card-glass animate-slide-up"
+              style={{ animationDelay: "0.2s" }}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Palette className="w-5 h-5 text-accent-foreground" />
@@ -355,12 +421,18 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
                 <div>
                   <Label>Estilo Visual</Label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                    {estilosVisuais.map(estilo => (
+                    {estilosVisuais.map((estilo) => (
                       <Button
                         key={estilo}
-                        variant={formData.estiloVisual === estilo ? "default" : "outline"}
+                        variant={
+                          formData.estiloVisual === estilo
+                            ? "default"
+                            : "outline"
+                        }
                         size="sm"
-                        onClick={() => handleInputChange("estiloVisual", estilo)}
+                        onClick={() =>
+                          handleInputChange("estiloVisual", estilo)
+                        }
                         className="text-sm"
                       >
                         {estilo}
@@ -368,39 +440,90 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
                     ))}
                   </div>
                 </div>
-                
+
                 <Separator />
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>Cor Primária</Label>
-                    <div className="flex space-x-2 mt-2">
-                      {coresPrimarias.map(cor => (
+                    <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                      {coresPrimarias.map((cor) => (
                         <button
                           key={cor}
                           className={`w-8 h-8 rounded-md border-2 transition-all ${
-                            formData.corPrimaria === cor ? 'border-foreground scale-110' : 'border-border'
+                            formData.corPrimaria === cor && !corPrimariaCustom
+                              ? "border-foreground scale-110"
+                              : "border-border"
                           }`}
                           style={{ backgroundColor: cor }}
-                          onClick={() => handleInputChange("corPrimaria", cor)}
+                          onClick={() => {
+                            handleInputChange("corPrimaria", cor);
+                            setCorPrimariaCustom("");
+                          }}
                         />
                       ))}
                     </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="#000000"
+                        value={corPrimariaCustom}
+                        onChange={(e) => setCorPrimariaCustom(e.target.value)}
+                        maxLength={7}
+                        className="w-32 font-mono rounded px-2 py-1 border border-border bg-background text-foreground"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        Hexadecimal
+                      </span>
+                      <div
+                        className="w-8 h-8 rounded-md border-2 border-border"
+                        style={{
+                          backgroundColor: isValidHexColor(corPrimariaCustom)
+                            ? corPrimariaCustom
+                            : formData.corPrimaria,
+                        }}
+                      />
+                    </div>
                   </div>
-                  
                   <div>
                     <Label>Cor Secundária</Label>
-                    <div className="flex space-x-2 mt-2">
-                      {coresPrimarias.map(cor => (
+                    <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                      {coresPrimarias.map((cor) => (
                         <button
                           key={cor}
                           className={`w-8 h-8 rounded-md border-2 transition-all ${
-                            formData.corSecundaria === cor ? 'border-foreground scale-110' : 'border-border'
+                            formData.corSecundaria === cor &&
+                            !corSecundariaCustom
+                              ? "border-foreground scale-110"
+                              : "border-border"
                           }`}
                           style={{ backgroundColor: cor }}
-                          onClick={() => handleInputChange("corSecundaria", cor)}
+                          onClick={() => {
+                            handleInputChange("corSecundaria", cor);
+                            setCorSecundariaCustom("");
+                          }}
                         />
                       ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="#000000"
+                        value={corSecundariaCustom}
+                        onChange={(e) => setCorSecundariaCustom(e.target.value)}
+                        maxLength={7}
+                        className="w-32 font-mono rounded px-2 py-1 border border-border bg-background text-foreground"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        Hexadecimal
+                      </span>
+                      <div
+                        className="w-8 h-8 rounded-md border-2 border-border"
+                        style={{
+                          backgroundColor: isValidHexColor(corSecundariaCustom)
+                            ? corSecundariaCustom
+                            : formData.corSecundaria,
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -410,14 +533,22 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
 
           {/* Painel de Geração */}
           <div className="space-y-6">
-            <Card className="card-glass animate-slide-up sticky top-24" style={{ animationDelay: '0.3s' }}>
+            <Card
+              className="card-glass animate-slide-up sticky top-24"
+              style={{ animationDelay: "0.3s" }}
+            >
               <CardHeader>
                 <CardTitle>Gerar Prompt</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button 
+                <Button
                   onClick={gerarPrompt}
-                  disabled={gerandoPrompt || !formData.nomeSaas || !formData.problema || !formData.publicoAlvo}
+                  disabled={
+                    gerandoPrompt ||
+                    !formData.nomeSaas ||
+                    !formData.problema ||
+                    !formData.publicoAlvo
+                  }
                   className="btn-hero w-full"
                 >
                   {gerandoPrompt ? (
@@ -427,20 +558,35 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
                   )}
                   {gerandoPrompt ? "Gerando..." : "Gerar Prompt"}
                 </Button>
-                
+
                 {promptGerado && (
                   <div className="space-y-3">
                     <Separator />
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" onClick={copiarPrompt} className="flex-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={copiarPrompt}
+                        className="flex-1"
+                      >
                         <Copy className="w-4 h-4 mr-2" />
                         Copiar
                       </Button>
-                      <Button variant="outline" size="sm" onClick={baixarPrompt} className="flex-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={baixarPrompt}
+                        className="flex-1"
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Baixar
                       </Button>
-                      <Button variant="outline" size="sm" onClick={salvarProjeto} className="flex-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={salvarProjeto}
+                        className="flex-1"
+                      >
                         💾 Salvar
                       </Button>
                     </div>
@@ -448,7 +594,7 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
                 )}
               </CardContent>
             </Card>
-            
+
             {promptGerado && (
               <Card className="card-glass animate-fade-in">
                 <CardHeader>
@@ -467,5 +613,5 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
         </div>
       </div>
     </div>
-  )
+  );
 }
