@@ -38,24 +38,9 @@ const features = [
     description: "Personalize cores, fontes, estilos e funcionalidades específicas para seu projeto."
   },
   {
-    icon: TrendingUp,
-    title: "Sugestões Inteligentes",
-    description: "IA sugere melhorias e recursos adicionais baseados nas melhores práticas do mercado."
-  },
-  {
-    icon: Shield,
-    title: "Validação de Ideias",
-    description: "Análise automática da viabilidade e potencial de mercado da sua ideia de SaaS."
-  },
-  {
     icon: Clock,
     title: "Histórico de Projetos",
     description: "Acesse e gerencie todos os seus projetos criados em um dashboard centralizado."
-  },
-  {
-    icon: Users,
-    title: "Colaboração em Equipe",
-    description: "Compartilhe projetos e colabore com sua equipe de desenvolvimento."
   }
 ]
 
