@@ -15,6 +15,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useProjects } from "@/hooks/useProjects";
 import {
   Sparkles,
   Target,
@@ -76,6 +78,9 @@ const recursos = [
 ];
 
 export default function CriarSaas() {
+  const { user } = useAuth();
+  const { createProject, isCreating } = useProjects();
+  
   const [formData, setFormData] = useState({
     nomeSaas: "",
     problema: "",
@@ -225,22 +230,36 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
   };
 
   const salvarProjeto = () => {
-    if (!promptGerado) return;
+    if (!promptGerado) {
+      toast({
+        title: "Gere um prompt primeiro",
+        description: "Você precisa gerar o prompt antes de salvar o projeto.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const novoProjeto = {
-      id: Date.now(),
-      ...formData,
+    if (!user) {
+      toast({
+        title: "Faça login para salvar",
+        description: "Você precisa estar autenticado para salvar projetos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createProject({
+      nomeSaas: formData.nomeSaas,
+      problema: formData.problema,
+      publicoAlvo: formData.publicoAlvo,
+      tipo: formData.tipo,
+      descricao: formData.descricao,
+      recursosEscolhidos: formData.recursosEscolhidos,
+      estiloVisual: formData.estiloVisual,
+      corPrimaria: isValidHexColor(corPrimariaCustom) ? corPrimariaCustom : formData.corPrimaria,
+      corSecundaria: isValidHexColor(corSecundariaCustom) ? corSecundariaCustom : formData.corSecundaria,
+      fonte: formData.fonte,
       prompt: promptGerado,
-      criadoEm: new Date().toISOString(),
-    };
-
-    const projetosSalvos = JSON.parse(localStorage.getItem("projetos") || "[]");
-    projetosSalvos.push(novoProjeto);
-    localStorage.setItem("projetos", JSON.stringify(projetosSalvos));
-
-    toast({
-      title: "Projeto salvo!",
-      description: `O projeto "${formData.nomeSaas}" foi salvo em Meus Projetos.`,
     });
   };
 
@@ -585,9 +604,10 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
                         variant="outline"
                         size="sm"
                         onClick={salvarProjeto}
+                        disabled={isCreating}
                         className="flex-1"
                       >
-                        💾 Salvar
+                        {isCreating ? "Salvando..." : "💾 Salvar"}
                       </Button>
                     </div>
                   </div>

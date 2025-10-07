@@ -1,57 +1,34 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useProjects } from "@/hooks/useProjects"
 import { 
   FolderOpen, 
   Search, 
   Calendar, 
-  Eye, 
-  Edit, 
   Trash2,
   Plus,
   Filter
 } from "lucide-react"
 
-interface Projeto {
-  id: number
-  nomeSaas: string
-  tipo: string
-  problema: string
-  publicoAlvo: string
-  descricao: string
-  recursosEscolhidos: string[]
-  estiloVisual: string
-  corPrimaria: string
-  corSecundaria: string
-  fonte: string
-  prompt: string
-  criadoEm: string
-}
-
 export default function Projetos() {
   const [busca, setBusca] = useState("")
-  const [filtroStatus, setFiltroStatus] = useState("todos")
-  const [projetos, setProjetos] = useState<Projeto[]>([])
+  const { projects, isLoading, deleteProject, isDeleting } = useProjects()
 
-  useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("projetos") || "[]")
-    setProjetos(data)
-  }, [])
-
-  const deletarProjeto = (id: number) => {
-    const novos = projetos.filter(p => p.id !== id)
-    setProjetos(novos)
-    localStorage.setItem("projetos", JSON.stringify(novos))
+  const deletarProjeto = (id: string) => {
+    if (confirm("Tem certeza que deseja deletar este projeto?")) {
+      deleteProject(id)
+    }
   }
 
-  const projetosFiltrados = projetos.filter(projeto => {
+  const projetosFiltrados = projects.filter(projeto => {
     const matchBusca = 
-      projeto.nomeSaas.toLowerCase().includes(busca.toLowerCase()) ||
+      projeto.nomesaas.toLowerCase().includes(busca.toLowerCase()) ||
       (projeto.tipo || "").toLowerCase().includes(busca.toLowerCase())
-    const matchStatus = filtroStatus === "todos" // futuramente pode usar status
-    return matchBusca && matchStatus
+    return matchBusca
   })
 
   return (
@@ -104,69 +81,92 @@ export default function Projetos() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="card-glass animate-fade-in">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold">{projetos.length}</div>
+              {isLoading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{projects.length}</div>
+              )}
               <div className="text-sm text-muted-foreground">Total de Projetos</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Lista de Projetos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projetosFiltrados.map((projeto, index) => (
-            <Card 
-              key={projeto.id} 
-              className="card-glass card-hover animate-slide-up" 
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div 
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: projeto.corPrimaria }}
-                    />
-                    <div>
-                      <CardTitle className="text-lg">{projeto.nomeSaas}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{projeto.tipo}</p>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((n) => (
+              <Card key={n} className="card-glass">
+                <CardHeader className="pb-3">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2 mt-2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projetosFiltrados.map((projeto, index) => (
+              <Card 
+                key={projeto.id} 
+                className="card-glass card-hover animate-slide-up" 
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: projeto.corprimaria || "#000000" }}
+                      />
+                      <div>
+                        <CardTitle className="text-lg">{projeto.nomesaas}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{projeto.tipo || "Não especificado"}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {projeto.problema}
-                </p>
+                </CardHeader>
                 
-                <div className="flex flex-wrap gap-1">
-                  {projeto.recursosEscolhidos?.map(recurso => (
-                    <Badge key={recurso} variant="outline" className="text-xs">
-                      {recurso}
-                    </Badge>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                  <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                    <Calendar className="w-3 h-3" />
-                    <span>{new Date(projeto.criadoEm).toLocaleDateString('pt-BR')}</span>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {projeto.problema}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-1">
+                    {projeto.recursosescolhidos?.map(recurso => (
+                      <Badge key={recurso} variant="outline" className="text-xs">
+                        {recurso}
+                      </Badge>
+                    ))}
                   </div>
                   
-                  <div className="flex space-x-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => deletarProjeto(projeto.id)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                      <Calendar className="w-3 h-3" />
+                      <span>{projeto.criadoem ? new Date(projeto.criadoem).toLocaleDateString('pt-BR') : 'N/A'}</span>
+                    </div>
+                    
+                    <div className="flex space-x-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => deletarProjeto(projeto.id)}
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {projetosFiltrados.length === 0 && (
           <div className="text-center py-12 animate-fade-in">
