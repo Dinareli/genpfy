@@ -48,8 +48,7 @@ export function useProjects() {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // @ts-expect-error - Supabase types will be generated automatically
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("projects")
         .select("*")
         .eq("user_id", user.id)
@@ -68,8 +67,7 @@ export function useProjects() {
         throw new Error("Usuário não autenticado");
       }
 
-      // @ts-expect-error - Supabase types will be generated automatically
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("projects")
         .insert([
           {
@@ -116,8 +114,7 @@ export function useProjects() {
         throw new Error("Usuário não autenticado");
       }
 
-      // @ts-expect-error - Supabase types will be generated automatically
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("projects")
         .delete()
         .eq("id", projectId)
