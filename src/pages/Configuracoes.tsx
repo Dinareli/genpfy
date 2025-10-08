@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/useAuth"
+import { useUserPlan } from "@/hooks/useUserPlan"
 import { supabase } from "@/integrations/supabase/client"
 import { 
   Settings, 
@@ -27,6 +29,8 @@ import {
 
 export default function Configuracoes() {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+  const { userPlan, promptsRemaining, promptsUsed, planLimit, isLoading: planLoading } = useUserPlan()
   const [userProfile, setUserProfile] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [configuracoes, setConfiguracoes] = useState({
@@ -172,9 +176,21 @@ export default function Configuracoes() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Button variant="outline" size="sm" className="btn-glass w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="btn-glass w-full"
+                    onClick={() => {
+                      const plansSection = document.getElementById('planos');
+                      if (plansSection) {
+                        plansSection.scrollIntoView({ behavior: 'smooth' });
+                      } else {
+                        navigate('/#planos');
+                      }
+                    }}
+                  >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Upgrade de Plano
+                    {userPlan?.plan === 'free' ? 'Fazer Upgrade' : 'Gerenciar Plano'}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -193,11 +209,20 @@ export default function Configuracoes() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div className="p-4 bg-accent/50 rounded-lg">
                   <div className="text-2xl font-bold text-primary">
-                    {userProfile?.plan === 'free' ? '3' : '∞'}
+                    {planLoading ? '...' : (
+                      userPlan?.plan === 'free' 
+                        ? `${promptsRemaining}/${planLimit}` 
+                        : '∞'
+                    )}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Prompts por mês
+                    Prompts restantes
                   </div>
+                  {userPlan?.plan === 'free' && !planLoading && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {promptsUsed} usados este mês
+                    </div>
+                  )}
                 </div>
                 <div className="p-4 bg-accent/50 rounded-lg">
                   <div className="text-2xl font-bold text-secondary">

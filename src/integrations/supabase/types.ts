@@ -14,13 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          plan: string | null
+          prompts_used_this_month: number
+          usage_month: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          plan?: string | null
+          prompts_used_this_month?: number
+          usage_month?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          plan?: string | null
+          prompts_used_this_month?: number
+          usage_month?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          corprimaria: string | null
+          corsecundaria: string | null
+          criadoem: string | null
+          descricao: string | null
+          estilovisual: string | null
+          fonte: string | null
+          id: string
+          nomesaas: string
+          problema: string
+          prompt: string | null
+          publicoalvo: string
+          recursosescolhidos: string[] | null
+          tipo: string | null
+          user_id: string | null
+        }
+        Insert: {
+          corprimaria?: string | null
+          corsecundaria?: string | null
+          criadoem?: string | null
+          descricao?: string | null
+          estilovisual?: string | null
+          fonte?: string | null
+          id?: string
+          nomesaas: string
+          problema: string
+          prompt?: string | null
+          publicoalvo: string
+          recursosescolhidos?: string[] | null
+          tipo?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          corprimaria?: string | null
+          corsecundaria?: string | null
+          criadoem?: string | null
+          descricao?: string | null
+          estilovisual?: string | null
+          fonte?: string | null
+          id?: string
+          nomesaas?: string
+          problema?: string
+          prompt?: string | null
+          publicoalvo?: string
+          recursosescolhidos?: string[] | null
+          tipo?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reset_monthly_prompt_usage: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -17,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useProjects } from "@/hooks/useProjects";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { UpgradeModal } from "@/components/upgrade-modal";
 import {
   Sparkles,
   Target,
@@ -80,7 +82,9 @@ const recursos = [
 export default function CriarSaas() {
   const { user } = useAuth();
   const { createProject, isCreating } = useProjects();
+  const { canCreatePrompt, promptsRemaining, userPlan, incrementUsage } = useUserPlan();
   
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [formData, setFormData] = useState({
     nomeSaas: "",
     problema: "",
@@ -119,6 +123,17 @@ export default function CriarSaas() {
         description: "Preencha nome, problema e público-alvo para continuar.",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Verificar limite de plano
+    if (!canCreatePrompt) {
+      toast({
+        title: "Limite atingido",
+        description: `Você atingiu o limite de ${userPlan?.plan === 'free' ? '3 prompts' : 'prompts'} do plano ${userPlan?.plan}. Faça upgrade para continuar!`,
+        variant: "destructive",
+      });
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -261,6 +276,20 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
       fonte: formData.fonte,
       prompt: promptGerado,
     });
+
+    // Incrementar contador de uso após salvar
+    incrementUsage();
+
+    // Exibir aviso se está próximo do limite
+    if (userPlan?.plan === 'free' && promptsRemaining <= 1) {
+      toast({
+        title: promptsRemaining === 1 ? "Último prompt disponível!" : "Limite atingido!",
+        description: promptsRemaining === 1 
+          ? "Você tem apenas 1 prompt restante este mês. Considere fazer upgrade para prompts ilimitados."
+          : "Você usou todos os seus prompts gratuitos este mês. Faça upgrade para continuar criando!",
+        duration: 5000,
+      });
+    }
   };
 
   return (
@@ -560,6 +589,21 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
                 <CardTitle>Gerar Prompt</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {user && (
+                  <div className="mb-4 p-3 bg-accent/30 rounded-lg border border-border">
+                    <p className="text-sm text-muted-foreground">
+                      {userPlan?.plan === 'free' ? (
+                        <>
+                          Você tem <span className="font-bold text-primary">{promptsRemaining}</span> prompt(s) restante(s) este mês
+                        </>
+                      ) : (
+                        <>
+                          Plano <span className="font-bold text-primary capitalize">{userPlan?.plan}</span>: prompts ilimitados ✨
+                        </>
+                      )}
+                    </p>
+                  </div>
+                )}
                 <Button
                   onClick={gerarPrompt}
                   disabled={
@@ -632,6 +676,8 @@ Crie um MVP completo, funcional e estrategicamente otimizado seguindo estas espe
           </div>
         </div>
       </div>
+
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
     </div>
   );
 }
