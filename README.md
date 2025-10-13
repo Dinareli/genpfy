@@ -1,5 +1,7 @@
 # 🤖 Prompt Creator AI
 
+![Hero](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+
 `Prompt Creator AI` é uma aplicação web desenvolvida para facilitar a criação, gerenciamento e utilização de prompts para modelos de inteligência artificial. Com uma interface moderna e intuitiva, os usuários podem organizar suas ideias e otimizar a interação com IAs.
 
 ## ✨ Funcionalidades
