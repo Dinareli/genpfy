@@ -75,10 +75,10 @@ export default function AuthPage() {
                   input: 'input-focus',
                 },
               }}
-              providers={['google', 'github']}
               redirectTo={`${window.location.origin}/criar-saas`}
               showLinks={true}
               view="sign_in"
+              providers={["email"]}
               localization={{
                 variables: {
                   sign_in: {
