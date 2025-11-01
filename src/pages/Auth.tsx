@@ -78,6 +78,7 @@ export default function AuthPage() {
               redirectTo={`${window.location.origin}/criar-saas`}
               showLinks={true}
               view="sign_in"
+              providers={[]}
               localization={{
                 variables: {
                   sign_in: {
